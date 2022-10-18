@@ -18,12 +18,16 @@
     * commit object hash 
         * 类型: string
         * 描述: commit 的 hash 值
-    * blob objects hash
+    * file path
         * 类型: string
         * 描述: 数据对象的 hash 值，用于在 git 中快速定位文件的内容
+    * lines:
+        * 类型：string
+        * 描述: 文件中的代码行数，如果是对多行代码记录评审意见格式为： x,y,z 例如 12,13,14
     * comment
         * 类型: string
         * 描述: 代码评审意见
+* flag:
     * labels
         * 类型: \[string\]string
         * 描述: 代码评审意见标签，键值对形势，例如 type: style; level: error
