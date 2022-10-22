@@ -7,23 +7,51 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/redxiiikk/code-review-tool-cli/tools"
+	"io/ioutil"
 	"os"
+	"path"
 )
 
-func AddCodeReviewComment(repoPath string, commitHash plumbing.Hash, filePath string, lines []int, reviewComment string, labels map[string]string) {
-	repo := openRepo(repoPath)
+func newReviewComment(
+	repo *git.Repository,
+	config *reviewCommentConfig,
+	commitHash plumbing.Hash,
+	filePath string,
+	lines []int,
+	reviewComment string,
+	labels map[string]string,
+) *codeReviewComment {
+	commitObject, err := repo.CommitObject(commitHash)
+	if err == plumbing.ErrObjectNotFound {
+		tools.CheckIfError(err)
+	}
 
-	comment := codeReviewComment{repo, commitHash, filePath, lines, reviewComment, labels}
+	labels["commitAuthor"] = commitObject.Author.Name
+	labels["commitEmail"] = commitObject.Author.Email
 
-	comment.valid()
-	comment.persist()
-}
+	if _, isExisted := labels["reviewAuthor"]; !isExisted {
+		labels["reviewAuthor"] = commitObject.Author.Name
+	}
 
-func openRepo(repoPath string) *git.Repository {
-	repo, err := git.PlainOpen(repoPath)
-	tools.CheckIfError(err)
+	if _, isExisted := labels["reviewEmail"]; !isExisted {
+		labels["reviewEmail"] = commitObject.Author.Email
+	}
 
-	return repo
+	if _, isExisted := labels["status"]; !isExisted {
+		labels["status"] = OPEN.string()
+	}
+
+	comment := codeReviewComment{
+		repo:   repo,
+		config: config,
+
+		CommitHash: commitHash,
+		FilePath:   filePath,
+		Lines:      lines,
+		Comment:    reviewComment,
+		Labels:     labels,
+	}
+	return &comment
 }
 
 func (comment *codeReviewComment) valid() {
@@ -62,8 +90,41 @@ func (comment *codeReviewComment) valid() {
 }
 
 func (comment *codeReviewComment) persist() {
-	bytes, err := json.Marshal(comment)
+	comment.config.createCommentDirWhenNotExisted()
+
+	reviewCommentHistory := comment.readReviewCommentHistory()
+	reviewCommentHistory = append(reviewCommentHistory, *comment)
+
+	bytes, err := json.Marshal(reviewCommentHistory)
 	tools.CheckIfError(err)
 
-	fmt.Println(string(bytes))
+	err = ioutil.WriteFile(comment.storePath(), bytes, 0644)
+	tools.CheckIfError(err)
+}
+
+func (comment *codeReviewComment) readReviewCommentHistory() (result []codeReviewComment) {
+	result = []codeReviewComment{}
+
+	reviewCommentStorePath := comment.storePath()
+
+	_, err := os.Stat(reviewCommentStorePath)
+
+	if err != nil {
+		if !os.IsNotExist(err) {
+			tools.CheckIfError(err)
+		}
+	} else {
+		file, err := ioutil.ReadFile(reviewCommentStorePath)
+		tools.CheckIfError(err)
+
+		err = json.Unmarshal(file, &result)
+		tools.CheckIfError(err)
+	}
+
+	return
+}
+
+func (comment *codeReviewComment) storePath() string {
+	reviewCommentFileName := comment.Labels["reviewAuthor"] + ":" + comment.Labels["reviewEmail"]
+	return path.Join(comment.config.commentDirPath, reviewCommentFileName)
 }
