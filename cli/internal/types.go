@@ -16,14 +16,15 @@ func (status reviewCommentStatus) string() string {
 }
 
 type codeReviewComment struct {
-	repo   *git.Repository
-	config *reviewCommentConfig
+	repo       *git.Repository
+	config     *reviewCommentConfig
+	commitHash plumbing.Hash
 
-	CommitHash plumbing.Hash     `json:"commitHash"`
-	FilePath   string            `json:"filePath"`
-	Lines      []int             `json:"lines"`
-	Comment    string            `json:"comment"`
-	Labels     map[string]string `json:"labels"`
+	CommitHashStr string            `json:"commitHash"`
+	FilePath      string            `json:"filePath"`
+	Lines         []int             `json:"lines"`
+	Comment       string            `json:"comment"`
+	Labels        map[string]string `json:"labels"`
 }
 
 type reviewCommentConfig struct {
