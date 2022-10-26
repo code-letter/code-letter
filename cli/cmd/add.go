@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/redxiiikk/code-review-tool-cli/internal"
 	"github.com/redxiiikk/code-review-tool-cli/tools"
 	"github.com/spf13/cobra"
@@ -41,7 +40,7 @@ func initFlag() {
 }
 
 func run(cmd *cobra.Command, args []string) {
-	commitHash := plumbing.NewHash(args[0])
+	commitHash := args[0]
 	filePath := args[1]
 
 	lineNumbers, err := tools.StrArrayToIntArray(strings.Split(args[2], ","))

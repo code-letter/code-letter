@@ -7,7 +7,6 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/redxiiikk/code-review-tool-cli/tools"
-	"io/ioutil"
 	"os"
 	"path"
 )
@@ -15,51 +14,56 @@ import (
 func newReviewComment(
 	repo *git.Repository,
 	config *reviewCommentConfig,
-	commitHash plumbing.Hash,
+	commitHashStr string,
 	filePath string,
 	lines []int,
 	reviewComment string,
 	labels map[string]string,
 ) *codeReviewComment {
+	commitHash := plumbing.NewHash(commitHashStr)
 	commitObject, err := repo.CommitObject(commitHash)
 	if err == plumbing.ErrObjectNotFound {
 		tools.CheckIfError(err)
 	}
+	addDefaultLabel(labels, commitObject.Author.Name, commitObject.Author.Email)
 
-	labels["commitAuthor"] = commitObject.Author.Name
-	labels["commitEmail"] = commitObject.Author.Email
+	comment := codeReviewComment{
+		repo:       repo,
+		config:     config,
+		commitHash: commitHash,
+
+		CommitHashStr: commitHashStr,
+		FilePath:      filePath,
+		Lines:         lines,
+		Comment:       reviewComment,
+		Labels:        labels,
+	}
+	return &comment
+}
+
+func addDefaultLabel(labels map[string]string, author, email string) {
+	labels["commitAuthor"] = author
+	labels["commitEmail"] = email
 
 	if _, isExisted := labels["reviewAuthor"]; !isExisted {
-		labels["reviewAuthor"] = commitObject.Author.Name
+		labels["reviewAuthor"] = author
 	}
 
 	if _, isExisted := labels["reviewEmail"]; !isExisted {
-		labels["reviewEmail"] = commitObject.Author.Email
+		labels["reviewEmail"] = email
 	}
 
 	if _, isExisted := labels["status"]; !isExisted {
 		labels["status"] = OPEN.string()
 	}
-
-	comment := codeReviewComment{
-		repo:   repo,
-		config: config,
-
-		CommitHash: commitHash,
-		FilePath:   filePath,
-		Lines:      lines,
-		Comment:    reviewComment,
-		Labels:     labels,
-	}
-	return &comment
 }
 
 func (comment *codeReviewComment) valid() {
 	var errorMessages []string
 
-	commitObject, err := comment.repo.CommitObject(comment.CommitHash)
+	commitObject, err := comment.repo.CommitObject(comment.commitHash)
 	if err == plumbing.ErrObjectNotFound {
-		errorMessages = append(errorMessages, "commit object not found by hash: "+comment.CommitHash.String())
+		errorMessages = append(errorMessages, "commit object not found by hash: "+comment.CommitHashStr)
 	}
 
 	f, err := commitObject.File(comment.FilePath)
@@ -98,7 +102,7 @@ func (comment *codeReviewComment) persist() {
 	bytes, err := json.Marshal(reviewCommentHistory)
 	tools.CheckIfError(err)
 
-	err = ioutil.WriteFile(comment.storePath(), bytes, 0644)
+	err = os.WriteFile(comment.storePath(), bytes, 0644)
 	tools.CheckIfError(err)
 }
 
@@ -114,7 +118,7 @@ func (comment *codeReviewComment) readReviewCommentHistory() (result []codeRevie
 			tools.CheckIfError(err)
 		}
 	} else {
-		file, err := ioutil.ReadFile(reviewCommentStorePath)
+		file, err := os.ReadFile(reviewCommentStorePath)
 		tools.CheckIfError(err)
 
 		err = json.Unmarshal(file, &result)
