@@ -1,6 +1,9 @@
 package tools
 
 import (
+	"errors"
+	"os"
+	"os/exec"
 	"reflect"
 	"strconv"
 	"testing"
@@ -92,4 +95,40 @@ func TestNowTimestampString(t *testing.T) {
 		t.Errorf("can't get now timestamp string")
 		t.Fail()
 	}
+}
+
+func TestCheckIfError(t *testing.T) {
+	t.Run("should normal exist when don't given error", func(t *testing.T) {
+		if os.Getenv("TEST_SUM_COMMAND_TestCheckIfError_1") == "true" {
+			CheckIfError(nil)
+			return
+		} else {
+			cmd := exec.Command(os.Args[0], "-test.run=TestCheckIfError")
+			cmd.Env = append(os.Environ(), "TEST_SUM_COMMAND_TestCheckIfError_1=true")
+
+			err := cmd.Run()
+			if err != nil {
+				if e, ok := err.(*exec.ExitError); ok != true || e.ExitCode() != 0 {
+					t.Errorf("want normal exist given error, but get %d", e.ExitCode())
+				}
+			}
+		}
+	})
+
+	t.Run("should abnormal exist and exist code is 1 given error", func(t *testing.T) {
+		if os.Getenv("TEST_SUM_COMMAND_TestCheckIfError_2") == "true" {
+			CheckIfError(errors.New("THIS IS A ERROR FOR TEST CheckIfError"))
+			return
+		} else {
+			cmd := exec.Command(os.Args[0], "-test.run=TestCheckIfError")
+			cmd.Env = append(os.Environ(), "TEST_SUM_COMMAND_TestCheckIfError_2=true")
+
+			err := cmd.Run()
+			if err != nil {
+				if e, ok := err.(*exec.ExitError); ok != true || e.ExitCode() != 1 {
+					t.Errorf("not exit when existed file that is same name with comment dir: %v, %v", ok, e)
+				}
+			}
+		}
+	})
 }
