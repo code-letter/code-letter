@@ -77,10 +77,10 @@ func Test_reviewCommentConfig_createCommentDirWhenNotExisted(t *testing.T) {
 				cmd.Env = append(os.Environ(), "TEST_SUM_COMMAND_Test_reviewCommentConfig_createCommentDirWhenNotExisted=true")
 				err := cmd.Run()
 
-				e, ok := err.(*exec.ExitError)
-
-				if ok != true || e.ExitCode() != 1 {
-					t.Errorf("not exit when existed file that is same name with comment dir: %v, %v", ok, e)
+				if err != nil {
+					if e, ok := err.(*exec.ExitError); ok != true || e.ExitCode() != 1 {
+						t.Errorf("not exit when existed file that is same name with comment dir: %v, %v", ok, e)
+					}
 				}
 			}
 		},
