@@ -2,7 +2,7 @@ build: setup
 	go build -trimpath -ldflags="-s -w" -o out/code-review-tool-cli
 
 test: setup
-	go test -v -coverprofile=./out/coverprofile.out ./...
+	go test -coverprofile=./out/coverprofile.out ./...
 	go tool cover -func=./out/coverprofile.out
 
 report: test
