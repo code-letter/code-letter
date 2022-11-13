@@ -1,6 +1,6 @@
-package org.jetbrains.plugins.template.services
+package com.github.redxiiikk.codereviewtooljetbrainsplugin.services
 
-import org.jetbrains.plugins.template.MyBundle
+import com.github.redxiiikk.codereviewtooljetbrainsplugin.MyBundle
 
 class MyApplicationService {
 
