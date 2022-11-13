@@ -7,8 +7,16 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+
     </extensions>
 
     <applicationListeners>
     </applicationListeners>
+    <actions>
+        <action id="CodeReviewTool.CreateComment"
+                class="com.github.redxiiikk.codeReviewTool.plugins.jetbrains.CreateCommentAction"
+                text="Create-Comment-Action" description="Add review comment for select content">
+            <add-to-group group-id="Diff.EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>
