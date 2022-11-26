@@ -1,5 +1,5 @@
 build: setup
-	go build -trimpath -ldflags="-s -w" -o out/code-review-tool-cli
+	go build -trimpath -ldflags="-s -w" -o out/code-letter-cli
 
 test: setup
 	go test -coverprofile=./out/coverprofile.out ./...
