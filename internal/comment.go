@@ -6,7 +6,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/redxiiikk/code-review-tool-cli/tools"
+	"github.com/redxiiikk/code-letter-cli/tools"
 	"os"
 	"path"
 )

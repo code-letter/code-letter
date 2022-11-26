@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"github.com/redxiiikk/code-review-tool-cli/tools"
+	"github.com/redxiiikk/code-letter-cli/tools"
 	"os"
 	"path"
 )

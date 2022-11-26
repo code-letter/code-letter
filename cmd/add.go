@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/redxiiikk/code-review-tool-cli/internal"
-	"github.com/redxiiikk/code-review-tool-cli/tools"
+	"github.com/redxiiikk/code-letter-cli/internal"
+	"github.com/redxiiikk/code-letter-cli/tools"
 	"github.com/spf13/cobra"
 	"os"
 	"strings"

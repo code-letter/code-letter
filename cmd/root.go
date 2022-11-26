@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/go-git/go-git/v5"
-	"github.com/redxiiikk/code-review-tool-cli/tools"
+	"github.com/redxiiikk/code-letter-cli/tools"
 	"github.com/spf13/cobra"
 	"os"
 )

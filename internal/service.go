@@ -2,7 +2,7 @@ package internal
 
 import (
 	"github.com/go-git/go-git/v5"
-	"github.com/redxiiikk/code-review-tool-cli/tools"
+	"github.com/redxiiikk/code-letter-cli/tools"
 )
 
 func AddCodeReviewComment(

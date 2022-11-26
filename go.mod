@@ -1,4 +1,4 @@
-module github.com/redxiiikk/code-review-tool-cli
+module github.com/redxiiikk/code-letter-cli
 
 go 1.19
 
