@@ -1,19 +1,16 @@
 name: CLI check and build
+defaults:
+  run:
+    working-directory: cli
 on:
   push:
     paths:
       - "cli/**"
       - ".github/workflows/cli.yaml"
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: cli
     steps:
       - uses: actions/checkout@v3
         with:
@@ -30,9 +27,6 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: cli
     steps:
       - uses: actions/checkout@v3
         with:
