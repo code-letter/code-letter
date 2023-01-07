@@ -24,7 +24,7 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(addCmd)
+	rootCmd.AddCommand(AddCommand())
 	rootCmd.PersistentFlags().String(rootCmdRepoFlagName, "", "repo path")
 }
 

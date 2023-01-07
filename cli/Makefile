@@ -2,8 +2,7 @@ build: setup
 	go build -trimpath -ldflags="-s -w" -o out/code-letter-cli
 
 test: setup
-	go test -coverprofile=./out/coverprofile.out ./...
-	go tool cover -func=./out/coverprofile.out
+	go test -race -coverprofile=./out/coverprofile.out -covermode=atomic ./...
 
 report: test
 	go tool cover -html=./out/coverprofile.out

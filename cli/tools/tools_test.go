@@ -107,10 +107,9 @@ func TestCheckIfError(t *testing.T) {
 			cmd.Env = append(os.Environ(), "TEST_SUM_COMMAND_TestCheckIfError_1=true")
 
 			err := cmd.Run()
-			if err != nil {
-				if e, ok := err.(*exec.ExitError); ok != true || e.ExitCode() != 0 {
-					t.Errorf("want normal exist given error, but get %d", e.ExitCode())
-				}
+
+			if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+				t.Fatalf("process ran with err %v, want exit status 1", err)
 			}
 		}
 	})
@@ -124,11 +123,10 @@ func TestCheckIfError(t *testing.T) {
 			cmd.Env = append(os.Environ(), "TEST_SUM_COMMAND_TestCheckIfError_2=true")
 
 			err := cmd.Run()
-			if err != nil {
-				if e, ok := err.(*exec.ExitError); ok != true || e.ExitCode() != 1 {
-					t.Errorf("not exit when existed file that is same name with comment dir: %v, %v", ok, e)
-				}
+			if e, ok := err.(*exec.ExitError); ok && !e.Success() {
+				return
 			}
+			t.Fatalf("process ran with err %v, want exit status 1", err)
 		}
 	})
 }

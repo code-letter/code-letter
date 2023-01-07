@@ -9,6 +9,32 @@ on:
       - ".github/workflows/cli.yaml"
   workflow_dispatch:
 jobs:
+  code-style-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+          check-latest: true
+          cache: true
+          cache-dependency-path: cli/go.sum
+      - name: Formatting
+        run: |
+          gofmt -s -w .
+      - name: Commit
+        run: |
+          if [ -z "$(git status --porcelain)" ]
+          then
+              echo "code style is googd, nothing to update."
+          else
+              git config --global user.name 'Github Action'
+              git config --global user.email '72877527+redxiiikk@users.noreply.github.com'
+              git commit -am "#N/A style: automatic formatting by action"
+              git push
+          fi
   test:
     runs-on: ubuntu-latest
     steps:

@@ -1,35 +1,43 @@
 package internal
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/redxiiikk/code-letter-cli/tools"
 	"os"
-	"path"
 )
 
-func newReviewComment(
-	repo *git.Repository,
-	config *reviewCommentConfig,
+type Comment struct {
+	repo       *git.Repository
+	commitHash plumbing.Hash
+
+	CommitHashStr string            `json:"commitHash"`
+	FilePath      string            `json:"filePath"`
+	Lines         []int             `json:"lines"`
+	Comment       string            `json:"comment"`
+	Labels        map[string]string `json:"labels"`
+}
+
+func NewComment(
+	localRepoPath string,
 	commitHashStr string,
 	filePath string,
 	lines []int,
 	reviewComment string,
 	labels map[string]string,
-) *codeReviewComment {
+) *Comment {
+	repo := openRepo(localRepoPath)
 	commitHash := plumbing.NewHash(commitHashStr)
 	commitObject, err := repo.CommitObject(commitHash)
 	if err == plumbing.ErrObjectNotFound {
 		tools.CheckIfError(err)
 	}
+
 	addDefaultLabel(labels, commitObject.Author.Name, commitObject.Author.Email)
 
-	comment := codeReviewComment{
-		repo:       repo,
-		config:     config,
+	comment := Comment{
 		commitHash: commitHash,
 
 		CommitHashStr: commitHashStr,
@@ -39,6 +47,13 @@ func newReviewComment(
 		Labels:        labels,
 	}
 	return &comment
+}
+
+func openRepo(repoPath string) *git.Repository {
+	repo, err := git.PlainOpen(repoPath)
+	tools.CheckIfError(err)
+
+	return repo
 }
 
 func addDefaultLabel(labels map[string]string, author, email string) {
@@ -58,7 +73,7 @@ func addDefaultLabel(labels map[string]string, author, email string) {
 	}
 }
 
-func (comment *codeReviewComment) valid() {
+func (comment *Comment) valid() {
 	var errorMessages []string
 
 	commitObject, err := comment.repo.CommitObject(comment.commitHash)
@@ -91,44 +106,4 @@ func (comment *codeReviewComment) valid() {
 
 		os.Exit(1)
 	}
-}
-
-func (comment *codeReviewComment) persist() {
-	comment.config.createCommentDirWhenNotExisted()
-
-	reviewCommentHistory := comment.readReviewCommentHistory()
-	reviewCommentHistory = append(reviewCommentHistory, *comment)
-
-	bytes, err := json.Marshal(reviewCommentHistory)
-	tools.CheckIfError(err)
-
-	err = os.WriteFile(comment.storePath(), bytes, 0644)
-	tools.CheckIfError(err)
-}
-
-func (comment *codeReviewComment) readReviewCommentHistory() (result []codeReviewComment) {
-	result = []codeReviewComment{}
-
-	reviewCommentStorePath := comment.storePath()
-
-	_, err := os.Stat(reviewCommentStorePath)
-
-	if err != nil {
-		if !os.IsNotExist(err) {
-			tools.CheckIfError(err)
-		}
-	} else {
-		file, err := os.ReadFile(reviewCommentStorePath)
-		tools.CheckIfError(err)
-
-		err = json.Unmarshal(file, &result)
-		tools.CheckIfError(err)
-	}
-
-	return
-}
-
-func (comment *codeReviewComment) storePath() string {
-	reviewCommentFileName := comment.Labels["reviewAuthor"] + ":" + comment.Labels["reviewEmail"]
-	return path.Join(comment.config.commentDirPath, reviewCommentFileName)
 }
