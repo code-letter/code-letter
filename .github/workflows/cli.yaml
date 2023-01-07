@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - "cli/**"
+      - ".github/workflows/cli.yaml"
   pull_request:
     branches:
       - main
